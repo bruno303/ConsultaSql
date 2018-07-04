@@ -45,7 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\clsConexao.cs" />
+    <Compile Include="Classes\ConexaoClass.cs" />
+    <Compile Include="Controllers\ArquivoController.cs" />
+    <Compile Include="Controllers\UtilController.cs" />
     <Compile Include="frmConsultaSql.cs">
       <SubType>Form</SubType>
     </Compile>
