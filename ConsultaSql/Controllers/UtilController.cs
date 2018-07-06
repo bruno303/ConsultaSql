@@ -26,12 +26,19 @@ namespace ConsultaSql.Controllers
         /// <param name="combo">ComboBox que será preenchido.</param>
         public void CarregarDatabases(ComboBox combo)
         {
-            DataTable databases = new ConexaoClass().RetornarDados("SELECT NAME FROM MASTER.SYS.DATABASES WITH(NOLOCK)");
-            foreach (DataRow row in databases.Rows)
+            try
             {
-                combo.Items.Add(row[0].ToString());
+                DataTable databases = new ConexaoClass().RetornarDados("SELECT NAME FROM MASTER.SYS.DATABASES WITH(NOLOCK)");
+                foreach (DataRow row in databases.Rows)
+                {
+                    combo.Items.Add(row[0].ToString());
+                }
+                combo.SelectedIndex = 0;
             }
-            combo.SelectedIndex = 0;
+            catch (System.Exception ex)
+            {
+                throw ex;
+            }
         }
         #endregion
     }

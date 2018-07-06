@@ -20,7 +20,7 @@ namespace ConsultaSql.Classes
         /// </summary>
         public ConexaoClass()
         {
-            strConexao = "";
+            strConexao = new UtilController().MontarStringConexao("192.168.0.35", "MASTER", "sa", "bruno@123");
         }
 
         /// <summary>
