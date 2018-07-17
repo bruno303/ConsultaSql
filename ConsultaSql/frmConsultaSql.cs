@@ -1,8 +1,8 @@
-﻿using ConsultaSql.Classes;
-using ConsultaSql.Controllers;
+﻿using ConsultaSql.Controllers;
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ConsultaSql
@@ -21,14 +21,9 @@ namespace ConsultaSql
         private TimeSpan tempoExecucao;
 
         /// <summary>
-        /// Variável para controle de erros em outras threads.
+        /// Variável do tipo ConsultaController, responsável por realizar a consulta assíncrona.
         /// </summary>
-        private bool houveErro = false;
-
-        /// <summary>
-        /// Armazena última exception na thread de consulta.
-        /// </summary>
-        private Exception ultException;
+        ConsultaController consultaController;
         #endregion
 
         #region Métodos
@@ -50,6 +45,9 @@ namespace ConsultaSql
         {
             CarregarDatabases();
             tempoExecucao = new TimeSpan(0, 0, 0, 0, 0);
+            consultaController = new ConsultaController();
+            consultaController.EventoAntesConsulta += EventoAntesConsulta;
+            consultaController.EventoAposConsulta += EventoAposConsulta;
         }
 
         /// <summary>
@@ -77,27 +75,52 @@ namespace ConsultaSql
         }
 
         /// <summary>
-        /// Carrega as databases disponíveis no banco de dados e adiciona ao ComboBox cbxDatabase.
+        /// Carrega as databases disponíveis no banco de dados.
         /// </summary>
         private void CarregarDatabases()
         {
-            try
+            ConsultaController consulta = new ConsultaController()
             {
-                UtilController util = new UtilController();
-                util.CarregarDatabases(cbxDatabase);
-            }
-            catch (Exception ex)
+                QueryText = "SELECT NAME FROM SYS.DATABASES"
+            };
+            consulta.EventoAposConsulta += OnAposConsultaDatabases;
+            consulta.ExecutarConsulta();
+        }
+
+        /// <summary>
+        /// Evento a ser executado após a consulta de Databases. Aqui será preenchido o cbxDatabases com o retorno da consulta.
+        /// </summary>
+        /// <param name="houveErro">Booleano indicando se houve erro durante a consulta.</param>
+        /// <param name="exception">Nulo caso não haja erro. Se houve erro, essa será a exception capturada.</param>
+        /// <param name="retorno">DataTable com os dados retornados pela consulta.</param>
+        private void OnAposConsultaDatabases(bool houveErro, Exception exception, DataTable retorno)
+        {
+            Invoke((MethodInvoker) delegate
             {
-                ExibirMensagem("Erro ao consultar as Databases do servidor. Erro: " + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+                if (houveErro)
+                {
+                    ExibirMensagem("Erro ao consultar databases do servidor. Mensagem: "  + exception.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    foreach (DataRow linha in retorno.Rows)
+                    {
+                        cbxDatabase.Items.Add(linha[0].ToString());
+                    }
+                    if (cbxDatabase.Items.Count > 0)
+                    {
+                        cbxDatabase.SelectedIndex = 0;
+                    }
+                }
+            });
         }
 
         /// <summary>
         /// Abre a janela de seleção de arquivos para o usuário.
         /// Caso seja selecionado um arquivo, carrega seu conteúdo para o editor de texto.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Objeto que disparou o evento.</param>
+        /// <param name="e">Argumentos do evento.</param>
         private void btnAbrirArquivo_Click(object sender, EventArgs e)
         {
             ofdArquivo.ShowDialog();
@@ -109,29 +132,37 @@ namespace ConsultaSql
         }
 
         /// <summary>
-        /// Faz a chamada para uma nova consulta ao BackgroundWorker.
+        /// Faz a chamada para uma nova consulta.
         /// </summary>
         /// <param name="sender">Objeto que invocou o evento.</param>
         /// <param name="e">Argumentos do evento.</param>
         private void btnExecutar_Click(object sender, EventArgs e)
         {
-            if (!worker.IsBusy)
-            {
-                ExecutarConsulta();
-            }
+            ExecutarConsulta();
         }
 
         /// <summary>
-        /// Realiza ajustes de tela e inicia a consulta em segundo plano.
+        /// Realiza a consulta caso não tenha outra consulta sendo executada no momento.
         /// </summary>
         private void ExecutarConsulta()
         {
-            if (!worker.IsBusy)
+            consultaController.QueryText = txbQuery.Text;
+            consultaController.DatabaseName = cbxDatabase.Text;
+            consultaController.ExecutarConsulta();
+        }
+
+        /// <summary>
+        /// Preparação da tela para que a consulta seja executada.
+        /// </summary>
+        private void EventoAntesConsulta()
+        {
+            Invoke((MethodInvoker)delegate
             {
                 if (dadosGrid != null)
                 {
                     dadosGrid.Clear();
                     dadosGrid.Columns.Clear();
+                    dadosGrid = null;
                 }
                 dgvDados.DataSource = null;
                 ZerarTempoExecucao();
@@ -139,12 +170,7 @@ namespace ConsultaSql
                 lblStatus.Text = "Executando...";
                 btnExecutar.Enabled = false;
                 btnAbrirArquivo.Enabled = false;
-
-                object[] parametros = new object[2];
-                parametros[0] = txbQuery.Text;
-                parametros[1] = cbxDatabase.Text;
-                worker.RunWorkerAsync(parametros);
-            }
+            });
         }
 
         /// <summary>
@@ -174,82 +200,54 @@ namespace ConsultaSql
         /// <summary>
         /// Executa os acertos finais após a execução de uma consulta.
         /// </summary>
-        /// <param name="sender">Objeto que invocou o evento.</param>
-        /// <param name="e">Argumentos do evento.</param>
-        private void worker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        /// <param name="houveErro">Booleano indicando se houve erro durante a consulta.</param>
+        /// <param name="exception">Caso tenha acontecido algum erro, esse parâmetro conterá a exception gerada. Caso contrário, nulo.</param>
+        /// <param name="dados">DataTable com os dados retornados da consulta.</param>
+        private void EventoAposConsulta(bool houveErro, Exception exception, DataTable dados)
         {
-            btnAbrirArquivo.Enabled = true;
-            btnExecutar.Enabled = true;
-            if (string.IsNullOrEmpty(txbQuery.Text))
+            dadosGrid = dados;
+            Invoke((MethodInvoker)delegate
             {
-                lblStatus.Text = "Aguardando...";
-                lblQtdRegistros.Text = "0 registro(s).";
-                ZerarTempoExecucao();
-                ColocarFoco(txbQuery);
-                ExibirMensagem("É necessário definir a consulta!");
-            }
-            else if ((!worker.CancellationPending) && (!houveErro))
-            {
-                dgvDados.DataSource = dadosGrid;
-                try
+                btnAbrirArquivo.Enabled = true;
+                btnExecutar.Enabled = true;
+                if (string.IsNullOrEmpty(txbQuery.Text))
                 {
-                    dgvDados.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.ColumnHeader);
-                    lblQtdRegistros.Text = string.Format("{0} registro(s).", (dadosGrid.Rows != null ? dadosGrid.Rows.Count : 0));
-                    lblStatus.Text = "Concluído...";
-                    if (spcQueryDados.Panel2Collapsed)
+                    lblStatus.Text = "Aguardando...";
+                    lblQtdRegistros.Text = "0 registro(s).";
+                    ZerarTempoExecucao();
+                    ColocarFoco(txbQuery);
+                    ExibirMensagem("É necessário definir a consulta!");
+                }
+                else if ((!houveErro))
+                {
+                    dgvDados.DataSource = dadosGrid;
+                    try
                     {
-                        spcQueryDados.Panel2Collapsed = false;
+                        dgvDados.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.ColumnHeader);
+                        lblQtdRegistros.Text = string.Format("{0} registro(s).", (dadosGrid.Rows != null ? dadosGrid.Rows.Count : 0));
+                        lblStatus.Text = "Concluído...";
+                        if (spcQueryDados.Panel2Collapsed)
+                        {
+                            spcQueryDados.Panel2Collapsed = false;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        lblStatus.Text = "Apresentou erros...";
+                        lblQtdRegistros.Text = "0 registro(s).";
+                        ExibirMensagem("Ocorreu o seguinte erro durante a execução: " + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
-                catch (Exception ex)
+                tmTempoExecucao.Stop();
+
+                if (houveErro)
                 {
+                    houveErro = false;
                     lblStatus.Text = "Apresentou erros...";
                     lblQtdRegistros.Text = "0 registro(s).";
-                    ExibirMensagem("Ocorreu o seguinte erro durante a execução: " + ex.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ExibirMensagem("Ocorreu o seguinte erro durante a execução: " + exception.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-            }
-            tmTempoExecucao.Stop();
-
-            if (houveErro)
-            {
-                houveErro = false;
-                lblStatus.Text = "Apresentou erros...";
-                lblQtdRegistros.Text = "0 registro(s).";
-                ExibirMensagem("Ocorreu o seguinte erro durante a execução: " + ultException.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        /// <summary>
-        /// Grava as informações de erro para serem usadas na thread principal.
-        /// </summary>
-        /// <param name="ex"></param>
-        private void TratarErro(Exception ex)
-        {
-            houveErro = true;
-            ultException = ex;
-        }
-
-        /// <summary>
-        /// Executa a consulta de forma assíncrona.
-        /// </summary>
-        /// <param name="sender">Objeto que invocou o evento.</param>
-        /// <param name="e">Argumentos do evento.</param>
-        private void worker_DoWorkAsync(object sender, DoWorkEventArgs e)
-        {
-            try
-            {
-                object[] parametros = (object[])e.Argument;
-                ConexaoClass conexao = new ConexaoClass();
-                if (!string.IsNullOrEmpty(parametros[0].ToString()))
-                {
-                    string queryPreparada = string.Format("USE {0}; {1}", parametros[1].ToString(), parametros[0].ToString());
-                    dadosGrid = conexao.RetornarDados(queryPreparada);
-                }
-            }
-            catch (Exception ex)
-            {
-                TratarErro(ex);
-            }
+            });
         }
 
         /// <summary>
@@ -267,6 +265,16 @@ namespace ConsultaSql
             {
                 ExecutarConsulta();
             }
+        }
+
+        /// <summary>
+        /// Força a finalização do processo e alguma thread que esteja rodando.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void frmConsultaSql_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Environment.Exit(0);
         }
         #endregion
     }

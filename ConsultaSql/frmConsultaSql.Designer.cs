@@ -38,7 +38,6 @@
             this.btnAbrirArquivo = new System.Windows.Forms.Button();
             this.btnExecutar = new System.Windows.Forms.Button();
             this.ofdArquivo = new System.Windows.Forms.OpenFileDialog();
-            this.worker = new System.ComponentModel.BackgroundWorker();
             this.tmTempoExecucao = new System.Windows.Forms.Timer(this.components);
             this.spcQueryDados = new System.Windows.Forms.SplitContainer();
             this.txbQuery = new System.Windows.Forms.TextBox();
@@ -136,13 +135,6 @@
             // 
             this.ofdArquivo.Filter = "Sql Files|*.sql|Text Files|*.txt";
             // 
-            // worker
-            // 
-            this.worker.WorkerReportsProgress = true;
-            this.worker.WorkerSupportsCancellation = true;
-            this.worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.worker_DoWorkAsync);
-            this.worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
-            // 
             // tmTempoExecucao
             // 
             this.tmTempoExecucao.Interval = 1000;
@@ -204,6 +196,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmConsultaSql";
             this.Text = "Consulta - SQL";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmConsultaSql_FormClosed);
             this.Load += new System.EventHandler(this.frmConsultaSql_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EventoKeyDown);
             this.pnOpcoes.ResumeLayout(false);
@@ -225,7 +218,6 @@
         private System.Windows.Forms.Label lblQtdRegistros;
         private System.Windows.Forms.ComboBox cbxDatabase;
         private System.Windows.Forms.OpenFileDialog ofdArquivo;
-        private System.ComponentModel.BackgroundWorker worker;
         private System.Windows.Forms.Timer tmTempoExecucao;
         private System.Windows.Forms.SplitContainer spcQueryDados;
         private System.Windows.Forms.TextBox txbQuery;
