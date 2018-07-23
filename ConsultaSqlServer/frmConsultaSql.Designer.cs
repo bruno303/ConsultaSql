@@ -35,14 +35,13 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.cbxDatabase = new System.Windows.Forms.ComboBox();
             this.lblQtdRegistros = new System.Windows.Forms.Label();
-            this.btnAbrirArquivo = new System.Windows.Forms.Button();
-            this.btnExecutar = new System.Windows.Forms.Button();
             this.ofdArquivo = new System.Windows.Forms.OpenFileDialog();
-            this.worker = new System.ComponentModel.BackgroundWorker();
             this.tmTempoExecucao = new System.Windows.Forms.Timer(this.components);
             this.spcQueryDados = new System.Windows.Forms.SplitContainer();
             this.txbQuery = new System.Windows.Forms.TextBox();
             this.dgvDados = new System.Windows.Forms.DataGridView();
+            this.btnAbrirArquivo = new System.Windows.Forms.Button();
+            this.btnExecutar = new System.Windows.Forms.Button();
             this.pnOpcoes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spcQueryDados)).BeginInit();
             this.spcQueryDados.Panel1.SuspendLayout();
@@ -94,7 +93,7 @@
             this.cbxDatabase.Dock = System.Windows.Forms.DockStyle.Top;
             this.cbxDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbxDatabase.DropDownWidth = 116;
-            this.cbxDatabase.Location = new System.Drawing.Point(5, 51);
+            this.cbxDatabase.Location = new System.Drawing.Point(5, 119);
             this.cbxDatabase.MaxDropDownItems = 15;
             this.cbxDatabase.Name = "cbxDatabase";
             this.cbxDatabase.Size = new System.Drawing.Size(154, 21);
@@ -110,38 +109,9 @@
             this.lblQtdRegistros.Text = "0 registro(s).";
             this.lblQtdRegistros.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // btnAbrirArquivo
-            // 
-            this.btnAbrirArquivo.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnAbrirArquivo.Location = new System.Drawing.Point(5, 28);
-            this.btnAbrirArquivo.Name = "btnAbrirArquivo";
-            this.btnAbrirArquivo.Size = new System.Drawing.Size(154, 23);
-            this.btnAbrirArquivo.TabIndex = 1;
-            this.btnAbrirArquivo.Text = "Abrir Query";
-            this.btnAbrirArquivo.UseVisualStyleBackColor = true;
-            this.btnAbrirArquivo.Click += new System.EventHandler(this.btnAbrirArquivo_Click);
-            // 
-            // btnExecutar
-            // 
-            this.btnExecutar.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnExecutar.Location = new System.Drawing.Point(5, 5);
-            this.btnExecutar.Name = "btnExecutar";
-            this.btnExecutar.Size = new System.Drawing.Size(154, 23);
-            this.btnExecutar.TabIndex = 0;
-            this.btnExecutar.Text = "Executar";
-            this.btnExecutar.UseVisualStyleBackColor = true;
-            this.btnExecutar.Click += new System.EventHandler(this.btnExecutar_Click);
-            // 
             // ofdArquivo
             // 
             this.ofdArquivo.Filter = "Sql Files|*.sql|Text Files|*.txt";
-            // 
-            // worker
-            // 
-            this.worker.WorkerReportsProgress = true;
-            this.worker.WorkerSupportsCancellation = true;
-            this.worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.worker_DoWorkAsync);
-            this.worker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.worker_RunWorkerCompleted);
             // 
             // tmTempoExecucao
             // 
@@ -194,6 +164,34 @@
             this.dgvDados.Size = new System.Drawing.Size(578, 307);
             this.dgvDados.TabIndex = 1;
             // 
+            // btnAbrirArquivo
+            // 
+            this.btnAbrirArquivo.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnAbrirArquivo.Image = global::ConsultaSql.Properties.Resources.Open_file_icon1;
+            this.btnAbrirArquivo.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnAbrirArquivo.Location = new System.Drawing.Point(5, 62);
+            this.btnAbrirArquivo.Name = "btnAbrirArquivo";
+            this.btnAbrirArquivo.Padding = new System.Windows.Forms.Padding(5);
+            this.btnAbrirArquivo.Size = new System.Drawing.Size(154, 57);
+            this.btnAbrirArquivo.TabIndex = 1;
+            this.btnAbrirArquivo.Text = "Abrir Query";
+            this.btnAbrirArquivo.UseVisualStyleBackColor = true;
+            this.btnAbrirArquivo.Click += new System.EventHandler(this.btnAbrirArquivo_Click);
+            // 
+            // btnExecutar
+            // 
+            this.btnExecutar.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnExecutar.Image = global::ConsultaSql.Properties.Resources.database_search_icon1;
+            this.btnExecutar.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnExecutar.Location = new System.Drawing.Point(5, 5);
+            this.btnExecutar.Name = "btnExecutar";
+            this.btnExecutar.Padding = new System.Windows.Forms.Padding(5);
+            this.btnExecutar.Size = new System.Drawing.Size(154, 57);
+            this.btnExecutar.TabIndex = 0;
+            this.btnExecutar.Text = "Executar";
+            this.btnExecutar.UseVisualStyleBackColor = true;
+            this.btnExecutar.Click += new System.EventHandler(this.btnExecutar_Click);
+            // 
             // frmConsultaSql
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -204,6 +202,8 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "frmConsultaSql";
             this.Text = "Consulta - SQL";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmConsultaSql_FormClosing);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmConsultaSql_FormClosed);
             this.Load += new System.EventHandler(this.frmConsultaSql_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EventoKeyDown);
             this.pnOpcoes.ResumeLayout(false);
@@ -225,7 +225,6 @@
         private System.Windows.Forms.Label lblQtdRegistros;
         private System.Windows.Forms.ComboBox cbxDatabase;
         private System.Windows.Forms.OpenFileDialog ofdArquivo;
-        private System.ComponentModel.BackgroundWorker worker;
         private System.Windows.Forms.Timer tmTempoExecucao;
         private System.Windows.Forms.SplitContainer spcQueryDados;
         private System.Windows.Forms.TextBox txbQuery;

@@ -46,8 +46,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\ConexaoClass.cs" />
-    <Compile Include="Controllers\ArquivoController.cs" />
-    <Compile Include="Controllers\UtilController.cs" />
+    <Compile Include="Classes\ArquivoClass.cs" />
+    <Compile Include="Classes\ExecucaoSqlEventArgs.cs" />
+    <Compile Include="Classes\ExtensaoClass.cs" />
+    <Compile Include="Classes\SqlClass.cs" />
+    <Compile Include="Classes\UtilClass.cs" />
     <Compile Include="frmConsultaSql.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -67,6 +70,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -80,6 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\database-search-icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Open-file-icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
