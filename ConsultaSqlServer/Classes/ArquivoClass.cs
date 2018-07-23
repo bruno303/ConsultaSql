@@ -1,8 +1,8 @@
 ﻿using System.IO;
 
-namespace ConsultaSql.Controllers
+namespace ConsultaSql.Classes
 {
-    internal class ArquivoController
+    internal class ArquivoClass
     {
         #region Variáveis
         private string                                                                                                                                                                                                                                                                                                                                           fullFileName;
@@ -14,7 +14,7 @@ namespace ConsultaSql.Controllers
         /// Cria uma instância de ArquivoController
         /// </summary>
         /// <param name="fullFileName">Nome completo do arquivo. Inclui diretório, nome e extensão do arquivo.</param>
-        public ArquivoController(string fullFileName)
+        public ArquivoClass(string fullFileName)
         {
             this.fullFileName = fullFileName;
             CarregarInformacoesArquivo();

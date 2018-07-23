@@ -1,8 +1,6 @@
-﻿using ConsultaSql.Controllers;
+﻿using ConsultaSql.Classes;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Threading;
 using System.Windows.Forms;
 
 namespace ConsultaSql
@@ -23,7 +21,7 @@ namespace ConsultaSql
         /// <summary>
         /// Variável do tipo ConsultaController, responsável por realizar a consulta assíncrona.
         /// </summary>
-        ConsultaController consultaController;
+        private SqlClass executaSql;
         #endregion
 
         #region Métodos
@@ -45,9 +43,9 @@ namespace ConsultaSql
         {
             CarregarDatabases();
             tempoExecucao = new TimeSpan(0, 0, 0, 0, 0);
-            consultaController = new ConsultaController();
-            consultaController.EventoAntesConsulta += EventoAntesConsulta;
-            consultaController.EventoAposConsulta += EventoAposConsulta;
+            executaSql = new SqlClass();
+            executaSql.EventoAntesExecucao += EventoAntesExecucao;
+            executaSql.EventoAposExecucao += EventoAposExecucao;
         }
 
         /// <summary>
@@ -79,40 +77,32 @@ namespace ConsultaSql
         /// </summary>
         private void CarregarDatabases()
         {
-            ConsultaController consulta = new ConsultaController()
+            SqlClass consulta = new SqlClass()
             {
                 QueryText = "SELECT NAME FROM SYS.DATABASES"
             };
-            consulta.EventoAposConsulta += OnAposConsultaDatabases;
-            consulta.ExecutarConsulta();
-        }
-
-        /// <summary>
-        /// Evento a ser executado após a consulta de Databases. Aqui será preenchido o cbxDatabases com o retorno da consulta.
-        /// </summary>
-        /// <param name="houveErro">Booleano indicando se houve erro durante a consulta.</param>
-        /// <param name="exception">Nulo caso não haja erro. Se houve erro, essa será a exception capturada.</param>
-        /// <param name="retorno">DataTable com os dados retornados pela consulta.</param>
-        private void OnAposConsultaDatabases(bool houveErro, Exception exception, DataTable retorno)
-        {
-            Invoke((MethodInvoker) delegate
+            consulta.EventoAposExecucao += (object sender, ExecucaoSqlEventArgs e) =>
             {
-                if (houveErro)
+                Invoke((MethodInvoker)delegate
                 {
-                    ExibirMensagem("Erro ao consultar databases do servidor. Mensagem: "  + exception.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                else
-                {
-                    foreach (DataRow linha in retorno.Rows)
+                    if (e.HasErrors)
                     {
-                        cbxDatabase.Items.Add(linha[0].ToString());
+                        ExibirMensagem("Erro ao consultar databases do servidor. Mensagem: " + e.SqlException.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                    if (cbxDatabase.Items.Count > 0)
+                    else if (e.ReturnedData.HasRows())
                     {
-                        cbxDatabase.SelectedIndex = 0;
+                        foreach (DataRow linha in e.ReturnedData.Rows)
+                        {
+                            cbxDatabase.Items.Add(linha[0].ToString());
+                        }
+                        if (cbxDatabase.Items.Count > 0)
+                        {
+                            cbxDatabase.SelectedIndex = 0;
+                        }
                     }
-                }
-            });
+                });
+            };
+            consulta.ExecutarAssincrona();
         }
 
         /// <summary>
@@ -126,7 +116,7 @@ namespace ConsultaSql
             ofdArquivo.ShowDialog();
             if (!string.IsNullOrEmpty(ofdArquivo.FileName))
             {
-                ArquivoController arquivo = new ArquivoController(ofdArquivo.FileName);
+                ArquivoClass arquivo = new ArquivoClass(ofdArquivo.FileName);
                 txbQuery.Text = arquivo.LerArquivoInteiro();
             }
         }
@@ -138,23 +128,25 @@ namespace ConsultaSql
         /// <param name="e">Argumentos do evento.</param>
         private void btnExecutar_Click(object sender, EventArgs e)
         {
-            ExecutarConsulta();
+            Executar();
         }
 
         /// <summary>
         /// Realiza a consulta caso não tenha outra consulta sendo executada no momento.
         /// </summary>
-        private void ExecutarConsulta()
+        private void Executar()
         {
-            consultaController.QueryText = txbQuery.Text;
-            consultaController.DatabaseName = cbxDatabase.Text;
-            consultaController.ExecutarConsulta();
+            executaSql.QueryText = txbQuery.Text;
+            executaSql.DatabaseName = cbxDatabase.Text;
+            executaSql.ExecutarAssincrona();
         }
 
         /// <summary>
         /// Preparação da tela para que a consulta seja executada.
         /// </summary>
-        private void EventoAntesConsulta()
+        /// <param name="sender">Objeto que fez a chamada do evento.</param>
+        /// <param name="e">Parâmetros do evento ExecucaoSql.</param>
+        private void EventoAntesExecucao(object sender, ExecucaoSqlEventArgs e)
         {
             Invoke((MethodInvoker)delegate
             {
@@ -170,6 +162,7 @@ namespace ConsultaSql
                 lblStatus.Text = "Executando...";
                 btnExecutar.Enabled = false;
                 btnAbrirArquivo.Enabled = false;
+                cbxDatabase.Enabled = false;
             });
         }
 
@@ -200,16 +193,16 @@ namespace ConsultaSql
         /// <summary>
         /// Executa os acertos finais após a execução de uma consulta.
         /// </summary>
-        /// <param name="houveErro">Booleano indicando se houve erro durante a consulta.</param>
-        /// <param name="exception">Caso tenha acontecido algum erro, esse parâmetro conterá a exception gerada. Caso contrário, nulo.</param>
-        /// <param name="dados">DataTable com os dados retornados da consulta.</param>
-        private void EventoAposConsulta(bool houveErro, Exception exception, DataTable dados)
+        /// <param name="sender">Objeto que fez a chamada do evento.</param>
+        /// <param name="e">Parâmetros do evento ExecucaoSql.</param>
+        private void EventoAposExecucao(object sender, ExecucaoSqlEventArgs e)
         {
-            dadosGrid = dados;
+            dadosGrid = e.ReturnedData;
             Invoke((MethodInvoker)delegate
             {
                 btnAbrirArquivo.Enabled = true;
                 btnExecutar.Enabled = true;
+                cbxDatabase.Enabled = true;
                 if (string.IsNullOrEmpty(txbQuery.Text))
                 {
                     lblStatus.Text = "Aguardando...";
@@ -218,13 +211,13 @@ namespace ConsultaSql
                     ColocarFoco(txbQuery);
                     ExibirMensagem("É necessário definir a consulta!");
                 }
-                else if ((!houveErro))
+                else if ((!e.HasErrors))
                 {
                     dgvDados.DataSource = dadosGrid;
                     try
                     {
                         dgvDados.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.ColumnHeader);
-                        lblQtdRegistros.Text = string.Format("{0} registro(s).", (dadosGrid.Rows != null ? dadosGrid.Rows.Count : 0));
+                        lblQtdRegistros.Text = string.Format("{0} registro(s).", (dadosGrid.HasRows() ? dadosGrid.Rows.Count : 0));
                         lblStatus.Text = "Concluído...";
                         if (spcQueryDados.Panel2Collapsed)
                         {
@@ -240,12 +233,11 @@ namespace ConsultaSql
                 }
                 tmTempoExecucao.Stop();
 
-                if (houveErro)
+                if (e.HasErrors)
                 {
-                    houveErro = false;
                     lblStatus.Text = "Apresentou erros...";
                     lblQtdRegistros.Text = "0 registro(s).";
-                    ExibirMensagem("Ocorreu o seguinte erro durante a execução: " + exception.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ExibirMensagem("Ocorreu o seguinte erro durante a execução: " + e.SqlException.Message, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             });
         }
@@ -263,7 +255,12 @@ namespace ConsultaSql
             }
             else if (e.KeyCode == Keys.F5)
             {
-                ExecutarConsulta();
+                Executar();
+            }
+            else if (e.KeyCode == Keys.Tab && txbQuery.Focused)
+            {
+                txbQuery.Text += "    ";
+                e.Handled = true;
             }
         }
 
@@ -275,6 +272,14 @@ namespace ConsultaSql
         private void frmConsultaSql_FormClosed(object sender, FormClosedEventArgs e)
         {
             Environment.Exit(0);
+        }
+
+        private void frmConsultaSql_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if ((e.CloseReason != CloseReason.WindowsShutDown) && (executaSql.EmExecucao()))
+            {
+                e.Cancel = true;
+            }
         }
         #endregion
     }
