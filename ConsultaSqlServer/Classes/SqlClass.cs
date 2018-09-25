@@ -6,11 +6,6 @@ namespace ConsultaSql.Classes
 {
     internal class SqlClass
     {
-        #region Delegates para eventos
-        public delegate void AposExecutaDelegate(object sender, ExecucaoSqlEventArgs e);
-        public delegate void AntesExecucaoDelegate(object sender, ExecucaoSqlEventArgs e);
-        #endregion
-
         #region Propriedades
         // Privados
         private DataTable dados;
@@ -19,8 +14,8 @@ namespace ConsultaSql.Classes
         private Thread threadExecucao;
 
         // Públicos
-        public event AposExecutaDelegate EventoAposExecucao;
-        public event AntesExecucaoDelegate EventoAntesExecucao;
+        public event EventHandler<ExecucaoSqlEventArgs> EventoAposExecucao;
+        public event EventHandler<ExecucaoSqlEventArgs> EventoAntesExecucao;
         public string QueryText { get; set; }
         public string DatabaseName { get; set; } = "MASTER";
         #endregion

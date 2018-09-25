@@ -35,13 +35,13 @@
             this.lblStatus = new System.Windows.Forms.Label();
             this.cbxDatabase = new System.Windows.Forms.ComboBox();
             this.lblQtdRegistros = new System.Windows.Forms.Label();
+            this.btnAbrirArquivo = new System.Windows.Forms.Button();
+            this.btnExecutar = new System.Windows.Forms.Button();
             this.ofdArquivo = new System.Windows.Forms.OpenFileDialog();
             this.tmTempoExecucao = new System.Windows.Forms.Timer(this.components);
             this.spcQueryDados = new System.Windows.Forms.SplitContainer();
             this.txbQuery = new System.Windows.Forms.TextBox();
             this.dgvDados = new System.Windows.Forms.DataGridView();
-            this.btnAbrirArquivo = new System.Windows.Forms.Button();
-            this.btnExecutar = new System.Windows.Forms.Button();
             this.pnOpcoes.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.spcQueryDados)).BeginInit();
             this.spcQueryDados.Panel1.SuspendLayout();
@@ -109,6 +109,34 @@
             this.lblQtdRegistros.Text = "0 registro(s).";
             this.lblQtdRegistros.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // btnAbrirArquivo
+            // 
+            this.btnAbrirArquivo.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnAbrirArquivo.Image = global::ConsultaSql.Properties.Resources.Open_file_icon1;
+            this.btnAbrirArquivo.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnAbrirArquivo.Location = new System.Drawing.Point(5, 62);
+            this.btnAbrirArquivo.Name = "btnAbrirArquivo";
+            this.btnAbrirArquivo.Padding = new System.Windows.Forms.Padding(5);
+            this.btnAbrirArquivo.Size = new System.Drawing.Size(154, 57);
+            this.btnAbrirArquivo.TabIndex = 1;
+            this.btnAbrirArquivo.Text = "Abrir Query";
+            this.btnAbrirArquivo.UseVisualStyleBackColor = true;
+            this.btnAbrirArquivo.Click += new System.EventHandler(this.btnAbrirArquivo_Click);
+            // 
+            // btnExecutar
+            // 
+            this.btnExecutar.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnExecutar.Image = global::ConsultaSql.Properties.Resources.database_search_icon1;
+            this.btnExecutar.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnExecutar.Location = new System.Drawing.Point(5, 5);
+            this.btnExecutar.Name = "btnExecutar";
+            this.btnExecutar.Padding = new System.Windows.Forms.Padding(5);
+            this.btnExecutar.Size = new System.Drawing.Size(154, 57);
+            this.btnExecutar.TabIndex = 0;
+            this.btnExecutar.Text = "Executar";
+            this.btnExecutar.UseVisualStyleBackColor = true;
+            this.btnExecutar.Click += new System.EventHandler(this.btnExecutar_Click);
+            // 
             // ofdArquivo
             // 
             this.ofdArquivo.Filter = "Sql Files|*.sql|Text Files|*.txt";
@@ -163,34 +191,6 @@
             this.dgvDados.ReadOnly = true;
             this.dgvDados.Size = new System.Drawing.Size(578, 307);
             this.dgvDados.TabIndex = 1;
-            // 
-            // btnAbrirArquivo
-            // 
-            this.btnAbrirArquivo.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnAbrirArquivo.Image = global::ConsultaSql.Properties.Resources.Open_file_icon1;
-            this.btnAbrirArquivo.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnAbrirArquivo.Location = new System.Drawing.Point(5, 62);
-            this.btnAbrirArquivo.Name = "btnAbrirArquivo";
-            this.btnAbrirArquivo.Padding = new System.Windows.Forms.Padding(5);
-            this.btnAbrirArquivo.Size = new System.Drawing.Size(154, 57);
-            this.btnAbrirArquivo.TabIndex = 1;
-            this.btnAbrirArquivo.Text = "Abrir Query";
-            this.btnAbrirArquivo.UseVisualStyleBackColor = true;
-            this.btnAbrirArquivo.Click += new System.EventHandler(this.btnAbrirArquivo_Click);
-            // 
-            // btnExecutar
-            // 
-            this.btnExecutar.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnExecutar.Image = global::ConsultaSql.Properties.Resources.database_search_icon1;
-            this.btnExecutar.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnExecutar.Location = new System.Drawing.Point(5, 5);
-            this.btnExecutar.Name = "btnExecutar";
-            this.btnExecutar.Padding = new System.Windows.Forms.Padding(5);
-            this.btnExecutar.Size = new System.Drawing.Size(154, 57);
-            this.btnExecutar.TabIndex = 0;
-            this.btnExecutar.Text = "Executar";
-            this.btnExecutar.UseVisualStyleBackColor = true;
-            this.btnExecutar.Click += new System.EventHandler(this.btnExecutar_Click);
             // 
             // frmConsultaSql
             // 
